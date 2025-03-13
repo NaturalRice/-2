@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>还可以这样？！+AI助手</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; background: #000; }
+    #game-container { margin: 0 auto; width: 800px; height: 700px; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <!-- 加载拆分后的 JavaScript 文件 -->
+  <script src="constants.js"></script>
+  <script src="systems/ItemData.js"></script>
+  <script src="systems/Inventory.js"></script>
+  <script src="systems/BackpackUI.js"></script>
+  <script src="systems/Toolbar.js"></script>
+  <script src="scenes/StartScene.js"></script>
+  <script src="scenes/AISelectionScene.js"></script>
+  <script src="scenes/MainScene.js"></script>
+  <script src="scenes/UIScene.js"></script>
+  <script src="config.js"></script> <!-- 确保 config.js 在所有场景之后加载 -->
+  <script src="main.js"></script> <!-- 主入口文件 -->
+</body>
+</html>
