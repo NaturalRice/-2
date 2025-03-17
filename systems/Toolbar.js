@@ -2,6 +2,7 @@ class Toolbar {
   constructor(scene) {
     this.scene = scene;
     this.toolbarSlots = [];
+    this.selectedSlotIndex = -1; // 当前选中的槽位索引
     this.createToolbar();
   }
 
@@ -81,7 +82,24 @@ class Toolbar {
 
     return { bg, icon, countText, item: null };
   }
+  
+  // 选中槽位
+  selectSlot(index) {
+    // 取消之前选中的槽位
+    if (this.selectedSlotIndex !== -1) {
+      this.toolbarSlots[this.selectedSlotIndex].bg.setFillStyle(0x666666); // 恢复默认颜色
+    }
 
+    // 选中新的槽位
+    if (index >= 0 && index < this.toolbarSlots.length) {
+      this.selectedSlotIndex = index;
+      this.toolbarSlots[index].bg.setFillStyle(0x888888); // 改变背景颜色
+    } else {
+      this.selectedSlotIndex = -1; // 如果没有选中任何槽位，重置索引
+    }
+  }
+
+  
   onSlotDragStart(pointer, slotBg) {
     const slot = this.toolbarSlots.find(s => s.bg === slotBg);
     if (slot && slot.item) {

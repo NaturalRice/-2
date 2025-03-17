@@ -123,6 +123,17 @@ class MainScene extends Phaser.Scene {
       '0': Phaser.Input.Keyboard.KeyCodes.ZERO,
     });
 
+    // 监听数字键按下事件
+    for (let i = 0; i < 10; i++) {
+      const key = this.numberKeys[i === 9 ? '0' : i + 1];
+      if (key) {
+        key.on('down', () => {
+          console.log(`快捷键 ${i === 9 ? '0' : i + 1} 被按下`);
+          this.toolbar.selectSlot(i); // 选中对应的槽位
+        });
+      }
+    }
+
     // 检查键是否绑定成功
     for (const key in this.keys) {
       if (!this.keys[key]) {
