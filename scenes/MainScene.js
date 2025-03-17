@@ -57,20 +57,20 @@ class MainScene extends Phaser.Scene {
 
     // 敌人初始化
 	  this.enemies = this.physics.add.group({
-		key: 'enemy',
-		repeat: 5,
-		setXY: { x: 200, y: 200, stepX: 300, stepY: 300 }
-	  });
-	
+	  key: 'enemy',
+	  repeat: 5,
+	  setXY: { x: 200, y: 200, stepX: 300, stepY: 300 }
+	});
+
 	// 调整敌人初始位置，避免与玩家重叠
-	  this.enemies.getChildren().forEach(enemy => {
-		let newX, newY;
-		do {
-		  newX = Phaser.Math.Between(0, 1600);
-		  newY = Phaser.Math.Between(0, 1600);
-		} while (Phaser.Math.Distance.Between(newX, newY, this.player.x, this.player.y) < 200); // 确保距离玩家至少200像素
-		enemy.setPosition(newX, newY);
-	  });
+	this.enemies.getChildren().forEach(enemy => {
+	  let newX, newY;
+	  do {
+		newX = Phaser.Math.Between(0, 1600);
+		newY = Phaser.Math.Between(0, 1600);
+	  } while (Phaser.Math.Distance.Between(newX, newY, this.player.x, this.player.y) < 200); // 确保距离玩家至少200像素
+	  enemy.setPosition(newX, newY);
+	});
 
     // 启用碰撞检测
 	  this.physics.add.overlap(
@@ -133,15 +133,15 @@ class MainScene extends Phaser.Scene {
     }
 	
 	// 延迟启用碰撞检测
-  this.time.delayedCall(1000, () => { // 延迟1秒
-    this.physics.add.overlap(
-      this.player,
-      this.enemies,
-      this.handlePlayerEnemyCollision,
-      null,
-      this
-    );
-  });
+	  this.time.delayedCall(1000, () => { // 延迟1秒
+		this.physics.add.overlap(
+		  this.player,
+		  this.enemies,
+		  this.handlePlayerEnemyCollision,
+		  null,
+		  this
+		);
+	  });
     
     // 在 create 方法中绑定 pointerup 事件
     this.input.on('pointerup', () => this.toolbar.onSlotDragEnd());
@@ -522,6 +522,9 @@ class MainScene extends Phaser.Scene {
 	  console.log('玩家血量:', this.playerStats.hp); // 添加日志
 	  console.log('敌人位置:', enemy.x, enemy.y); // 添加日志
 
+	  // 如果已经触发过碰撞，且未过冷却时间，则直接返回
+	  if (this.collisionCooldown) return;
+
 	  // 玩家扣血
 	  this.playerStats.hp -= 10; // 每次碰撞扣10点血
 	  this.updatePlayerStatsDisplay();
@@ -536,6 +539,12 @@ class MainScene extends Phaser.Scene {
 	  // 敌人被击退
 	  const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
 	  enemy.setVelocity(-Math.cos(angle) * 200, -Math.sin(angle) * 200);
+
+	  // 设置冷却时间
+	  this.collisionCooldown = true;
+	  this.time.delayedCall(1000, () => { // 1秒后重置冷却时间
+		this.collisionCooldown = false;
+	  });
 	}
 	
 	// === 游戏结束逻辑 ===
