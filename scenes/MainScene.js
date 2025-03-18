@@ -130,6 +130,12 @@ class MainScene extends Phaser.Scene {
         key.on('down', () => {
           console.log(`快捷键 ${i === 9 ? '0' : i + 1} 被按下`);
           this.toolbar.selectSlot(i); // 选中对应的槽位
+
+          // 使用槽位中的物品
+          const slot = this.toolbar.toolbarSlots[i];
+          if (slot && slot.item) {
+            this.useItem(slot); // 使用物品
+          }
         });
       }
     }
@@ -464,6 +470,7 @@ class MainScene extends Phaser.Scene {
       .join(' ');
   }
 
+  // 显示消息提示
   showMessage(text, color) {
     const message = this.add.text(
       this.cameras.main.width / 2,  // 水平居中
@@ -480,7 +487,7 @@ class MainScene extends Phaser.Scene {
     .setScrollFactor(0);
     
     this.messageContainer.add(message);
-    this.time.delayedCall(2000, () => message.destroy());
+    this.time.delayedCall(2000, () => message.destroy()); // 2秒后消失
   }
 
   showUnlockMessage(text) {
@@ -512,18 +519,28 @@ class MainScene extends Phaser.Scene {
           }
           this.toolbar.updateToolbarSlot(this.toolbar.toolbarSlots.indexOf(slot), slot.item); // 更新槽位显示
           this.updatePlayerStatsDisplay(); // 更新玩家属性显示
+          this.showMessage('使用了药水，血量恢复 20 点！', '#00FF00'); // 显示提示信息
           break;
+
         case 'sword':
           // 使用剑的逻辑（例如增加攻击力）
-          console.log('使用了剑');
+          this.playerStats.attack += 10; // 假设增加 10 点攻击力
+          this.showMessage('使用了剑，攻击力增加 10 点！', '#00FF00'); // 显示提示信息
           break;
-        case 'spirit_stone':
-          // 使用灵石的逻辑（例如增加能量）
-          console.log('使用了灵石');
+
+        case 'Shield':
+          // 使用盾牌的逻辑（例如增加防御力）
+          this.playerStats.defense += 10; // 假设增加 10 点防御力
+          this.showMessage('使用了盾牌，防御力增加 10 点！', '#00FF00'); // 显示提示信息
           break;
+
         default:
           console.log('未知物品类型:', slot.item.type);
+          this.showMessage('未知物品类型，无法使用！', '#FF0000'); // 显示错误提示
       }
+    } else {
+      console.log('槽位中没有物品');
+      this.showMessage('槽位中没有物品！', '#FF0000'); // 显示错误提示
     }
   }
   
