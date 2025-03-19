@@ -2,6 +2,10 @@ class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: SCENE_KEYS.MAIN });
     this.backpack = new Inventory(24); // 24格背包
+    this.isSwingingSword = false; // 剑是否正在挥动
+	this.isUsingPotion = false; // 药水是否正在使用
+	this.isShieldActive = false; // 盾牌是否激活
+    this.shieldDurability = 0; // 盾牌耐久度
   }
 
   init(data) {
@@ -20,7 +24,7 @@ class MainScene extends Phaser.Scene {
     // 加载物品图标
     this.load.image('sword_icon', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741766956/ac5fbabd-fbc9-4011-9220-e2cf7ae6c393_rscyp2.png');
     this.load.image('potion_icon', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741776901/ac5fbabd-fbc9-4011-9220-e2cf7ae6c393_udgcgs.png');
-    this.load.image('Shield_icon', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741776712/ac5fbabd-fbc9-4011-9220-e2cf7ae6c393_wmuvcl.png');
+    this.load.image('shield_icon', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741776712/ac5fbabd-fbc9-4011-9220-e2cf7ae6c393_wmuvcl.png');
   }
 
   create() {
@@ -162,6 +166,27 @@ class MainScene extends Phaser.Scene {
     
     // 在 create 方法中绑定 pointerup 事件
     this.input.on('pointerup', () => this.toolbar.onSlotDragEnd());
+
+    // 监听鼠标左键按下事件
+    this.input.on('pointerdown', (pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.handleLeftClick();
+      }
+    });
+
+    // 监听鼠标左键按下事件
+    this.input.on('pointerdown', (pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.handleLeftClick();
+      }
+    });
+
+    // 监听鼠标左键按下事件
+    this.input.on('pointerdown', (pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.handleLeftClick();
+      }
+    });
   }
 
   addTestItemsToToolbar() {
@@ -169,7 +194,7 @@ class MainScene extends Phaser.Scene {
     const testItems = [
       { type: 'sword', spriteKey: 'sword_icon', count: 1 },
       { type: 'potion', spriteKey: 'potion_icon', count: 1 },
-      { type: 'Shield', spriteKey: 'Shield_icon', count: 1 }
+      { type: 'shield', spriteKey: 'shield_icon', count: 1 }
     ];
 
     // 将测试物品添加到物品栏的前三个槽位
@@ -262,7 +287,7 @@ class MainScene extends Phaser.Scene {
   }
 
   // === 核心游戏循环 ===
-	  update() {
+  update() {
 	  // 检测Esc键按下
 	  if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
 		// 检查UIScene是否已经启动
@@ -310,6 +335,12 @@ class MainScene extends Phaser.Scene {
 	  if (this.toolbar.draggedItem && this.toolbar.draggedSlot) {
 		this.toolbar.draggedSlot.icon.x = this.input.activePointer.x;
 		this.toolbar.draggedSlot.icon.y = this.input.activePointer.y;
+	  }
+	  
+	  // 如果盾牌处于激活状态，更新其位置
+	  if (this.isShieldActive && this.shield) {
+		this.shield.x = this.player.x;
+		this.shield.y = this.player.y;
 	  }
 	}
 
@@ -507,42 +538,35 @@ class MainScene extends Phaser.Scene {
   }
 
   // 使用物品
-  useItem(slot) {
-    if (slot.item) {
-      switch (slot.item.type) {
-        case 'potion':
-          // 使用药水恢复血量
-          this.playerStats.hp = Math.min(this.playerStats.hp + 20, this.playerStats.maxHp);
-          slot.item.count--; // 减少物品数量
-          if (slot.item.count <= 0) {
-            slot.item = null; // 如果数量为0，清空槽位
-          }
-          this.toolbar.updateToolbarSlot(this.toolbar.toolbarSlots.indexOf(slot), slot.item); // 更新槽位显示
-          this.updatePlayerStatsDisplay(); // 更新玩家属性显示
-          this.showMessage('使用了药水，血量恢复 20 点！', '#00FF00'); // 显示提示信息
-          break;
+	useItem(slot) {
+	  if (slot.item) {
+		switch (slot.item.type) {
+		  case 'potion':
+			// 仅播放动画，不直接使用药水
+			this.usePotion();
+			break;
 
-        case 'sword':
-          // 使用剑的逻辑（例如增加攻击力）
-          this.playerStats.attack += 10; // 假设增加 10 点攻击力
-          this.showMessage('使用了剑，攻击力增加 10 点！', '#00FF00'); // 显示提示信息
-          break;
+		  case 'sword':
+			// 使用剑的逻辑（例如增加攻击力）
+			this.playerStats.attack += 10; // 假设增加 10 点攻击力
+			this.showMessage('使用了剑，攻击力增加 10 点！', '#00FF00'); // 显示提示信息
+			break;
 
-        case 'Shield':
-          // 使用盾牌的逻辑（例如增加防御力）
-          this.playerStats.defense += 10; // 假设增加 10 点防御力
-          this.showMessage('使用了盾牌，防御力增加 10 点！', '#00FF00'); // 显示提示信息
-          break;
+		  case 'shield':
+			// 使用盾牌的逻辑（例如增加防御力）
+			this.playerStats.defense += 10; // 假设增加 10 点防御力
+			this.showMessage('使用了盾牌，防御力增加 10 点！', '#00FF00'); // 显示提示信息
+			break;
 
-        default:
-          console.log('未知物品类型:', slot.item.type);
-          this.showMessage('未知物品类型，无法使用！', '#FF0000'); // 显示错误提示
-      }
-    } else {
-      console.log('槽位中没有物品');
-      this.showMessage('槽位中没有物品！', '#FF0000'); // 显示错误提示
-    }
-  }
+		  default:
+			console.log('未知物品类型:', slot.item.type);
+			this.showMessage('未知物品类型，无法使用！', '#FF0000'); // 显示错误提示
+		}
+	  } else {
+		console.log('槽位中没有物品');
+		this.showMessage('槽位中没有物品！', '#FF0000'); // 显示错误提示
+	  }
+	}
   
   // === 处理玩家与敌人的碰撞 ===
   handlePlayerEnemyCollision(player, enemy) {
@@ -583,37 +607,153 @@ class MainScene extends Phaser.Scene {
 	  this.scene.start(SCENE_KEYS.START); // 返回开始场景
 	}
   
-  /*generateFileStructure() {
-    const fs = require('fs');
-    const path = require('path');
+  handleLeftClick() {
+	  const selectedSlot = this.toolbar.toolbarSlots[this.toolbar.selectedSlotIndex];
+	  if (selectedSlot && selectedSlot.item) {
+		switch (selectedSlot.item.type) {
+		  case 'sword':
+			this.swingSword();
+			break;
+		  case 'shield':
+			this.useShield();
+			break;
+		  case 'potion':
+			this.usePotion(); // 仅播放动画，不直接使用
+			break;
+		  default:
+			console.log('未知物品类型:', selectedSlot.item.type);
+		}
+	  }
+	}
+  
+  // 挥动剑
+  swingSword() {
+	  if (this.isSwingingSword) return; // 如果剑正在挥动，则不再重复触发
 
-    const rootDir = __dirname; // 当前脚本所在的目录
-    const outputFilePath = path.join(rootDir, 'file_structure.txt');
+	  const selectedSlot = this.toolbar.toolbarSlots[this.toolbar.selectedSlotIndex];
+	  if (selectedSlot && selectedSlot.item) {
+		this.isSwingingSword = true;
 
-    function readDirectory(dir, indent = '') {
-      let result = '';
-      const files = fs.readdirSync(dir);
+		// 创建剑的贴图
+		const sword = this.add.sprite(this.player.x, this.player.y, 'sword_icon')
+		  .setOrigin(0.5, 1) // 设置旋转中心为剑柄
+		  .setDepth(1000);
 
-      files.forEach((file, index) => {
-        const filePath = path.join(dir, file);
-        const stats = fs.statSync(filePath);
-        const isLast = index === files.length - 1;
+		// 挥动动画
+		this.tweens.add({
+		  targets: sword,
+		  angle: 90, // 旋转角度
+		  duration: 200, // 动画时长
+		  ease: 'Power2',
+		  onComplete: () => {
+			sword.destroy(); // 动画结束后销毁剑
+			this.isSwingingSword = false;
+			this.dealDamageToEnemies(); // 对敌人造成伤害
+		  }
+		});
 
-        result += `${indent}${isLast ? '└── ' : '├── '}${file}\n`;
+		this.showMessage('使用了剑，对敌人造成 10 点伤害！', '#00FF00'); // 显示提示信息
+	  }
+	}
+  
+	// 使用药水（仅播放动画，不直接使用）
+	usePotion() {
+	  if (this.isUsingPotion) return; // 如果药水正在使用，则不再重复触发
 
-        if (stats.isDirectory()) {
-          result += readDirectory(filePath, `${indent}${isLast ? '    ' : '│   '}`);
+	  const selectedSlot = this.toolbar.toolbarSlots[this.toolbar.selectedSlotIndex];
+	  if (selectedSlot && selectedSlot.item) {
+		this.isUsingPotion = true;
+
+		// 创建药水的贴图
+		const potion = this.add.sprite(this.player.x, this.player.y, 'potion_icon')
+		  .setOrigin(0.5, 1) // 设置旋转中心
+		  .setDepth(1000);
+
+		// 药水使用动画
+		this.tweens.add({
+		  targets: potion,
+		  y: this.player.y - 50, // 向上移动
+		  scaleX: 1.5, // 放大
+		  scaleY: 1.5, // 放大
+		  duration: 300, // 动画时长
+		  ease: 'Power2',
+		  onComplete: () => {
+			potion.destroy(); // 动画结束后销毁药水
+			this.isUsingPotion = false;
+			this.healPlayer(); // 恢复玩家血量
+		  }
+		});
+
+		this.showMessage('使用了药水，血量恢复 20 点！', '#00FF00'); // 显示提示信息
+	  }
+	}
+
+  // 恢复玩家血量（手动调用）
+	healPlayer() {
+	  const selectedSlot = this.toolbar.toolbarSlots[this.toolbar.selectedSlotIndex];
+	  if (selectedSlot && selectedSlot.item) {
+		this.playerStats.hp = Math.min(this.playerStats.hp + 20, this.playerStats.maxHp);
+		selectedSlot.item.count--; // 减少药水数量
+		if (selectedSlot.item.count <= 0) {
+		  selectedSlot.item = null; // 如果数量为0，清空槽位
+		}
+		this.toolbar.updateToolbarSlot(this.toolbar.selectedSlotIndex, selectedSlot.item); // 更新槽位显示
+		this.updatePlayerStatsDisplay(); // 更新玩家属性显示
+		this.showMessage('使用了药水，血量恢复 20 点！', '#00FF00'); // 显示提示信息
+	  }
+	}
+  
+  // 使用盾牌
+  useShield() {
+	  const selectedSlot = this.toolbar.toolbarSlots[this.toolbar.selectedSlotIndex];
+	  if (selectedSlot && selectedSlot.item) {
+		if (!this.isShieldActive) {
+		  this.isShieldActive = true;
+		  this.shieldDurability = 100; // 盾牌初始耐久度
+
+		  // 创建盾牌的贴图
+		  this.shield = this.add.sprite(this.player.x, this.player.y, 'shield_icon')
+			.setDepth(1000) // 显示盾牌贴图
+			.setScale(0.5); // 初始缩放
+
+		  // 盾牌激活动画
+		  this.tweens.add({
+			targets: this.shield,
+			scaleX: 1, // 放大到正常大小
+			scaleY: 1, // 放大到正常大小
+			duration: 300, // 动画时长
+			ease: 'Power2',
+			onComplete: () => {
+			  // 动画结束后，盾牌保持激活状态
+			  this.showMessage('盾牌已激活，防御力提升！', '#00FF00'); // 显示提示信息
+			}
+		  });
+
+		  // 更新盾牌位置的逻辑
+		  this.update = () => {
+			if (this.isShieldActive && this.shield) {
+			  this.shield.x = this.player.x;
+			  this.shield.y = this.player.y;
+			}
+		  };
+		} else {
+		  this.showMessage('盾牌已经激活！', '#FF0000'); // 显示提示信息
+		}
+	  }
+	}
+
+  // 对敌人造成伤害
+  dealDamageToEnemies() {
+    this.enemies.getChildren().forEach(enemy => {
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < 100) {
+        enemy.stats.hp -= 10; // 假设每次攻击造成 10 点伤害
+        if (enemy.stats.hp <= 0) {
+          enemy.disableBody(true, true); // 如果敌人血量 <= 0，销毁敌人
         }
-      });
-
-      return result;
-    }
-
-    const fileStructure = readDirectory(rootDir);
-    fs.writeFileSync(outputFilePath, fileStructure, 'utf-8');
-
-    console.log('文件结构已生成并保存到 file_structure.txt');
-  }*/
+        this.updateEnemyStatsDisplay(enemy); // 更新敌人血条
+      }
+    });
+  }
 }
 
 // 导出 MainScene 类
