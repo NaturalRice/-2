@@ -15,7 +15,7 @@ class MainScene extends Phaser.Scene {
 
   preload() {
     // 加载资源
-    this.load.image('background', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741508415/9c97bd65-c80c-4a76-94c6-0c99c6be5ded_bmcz1y.png');
+    this.load.image('background', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1742990491/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250326195914_zbvhpf.png');
     this.load.image('player', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741327937/player_refbni.png');
     this.load.image('ai_sword', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741327937/%E5%89%91%E5%AE%97_x3mado.png');
     this.load.image('ai_alchemy', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741327937/%E4%B8%B9%E5%AE%97_mxoxwx.png'); // 替换为丹宗AI贴图
@@ -38,10 +38,10 @@ class MainScene extends Phaser.Scene {
 
     // 背景和物理边界
     this.add.image(0, 0, 'background').setOrigin(0, 0);
-    this.physics.world.setBounds(0, 0, 1600, 1600);
+    this.physics.world.setBounds(0, 0, 1152, 1152);
 
     // 玩家初始化
-	  this.player = this.physics.add.sprite(800, 800, 'player');
+	  this.player = this.physics.add.sprite(576, 576, 'player');
 	  this.player.setCollideWorldBounds(true);
 	  this.player.setBounce(0.2);
 
@@ -70,8 +70,8 @@ class MainScene extends Phaser.Scene {
 	this.enemies.getChildren().forEach(enemy => {
 	  let newX, newY;
 	  do {
-		newX = Phaser.Math.Between(0, 1600);
-		newY = Phaser.Math.Between(0, 1600);
+		newX = Phaser.Math.Between(0, 1152);
+		newY = Phaser.Math.Between(0, 1152);
 	  } while (Phaser.Math.Distance.Between(newX, newY, this.player.x, this.player.y) < 200); // 确保距离玩家至少200像素
 	  enemy.setPosition(newX, newY);
 	});
@@ -98,7 +98,7 @@ class MainScene extends Phaser.Scene {
     });
 
     // === 镜头设置 ===
-    this.cameras.main.setBounds(0, 0, 1600, 1600);
+    this.cameras.main.setBounds(0, 0, 1152, 1152);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
     // === UI系统 ===

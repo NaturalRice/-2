@@ -5,15 +5,15 @@ class StartScene extends Phaser.Scene {
 
   preload() {
     // 加载开始界面背景图
-    this.load.image('startBackground', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1741519681/9c97bd65-c80c-4a76-94c6-0c99c6be5ded_yelnu2.png');
+    this.load.image('startBackground', 'https://res.cloudinary.com/dfcdam31d/image/upload/v1742990490/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250326195854_eci3hq.png');
   }
 
   create() {
     // 添加开始界面背景
-    this.add.image(400, 350, 'startBackground').setOrigin(0.5);
+    this.add.image(550, 550, 'startBackground').setOrigin(0.5);
 
     // 添加标题
-    this.add.text(400, 200, '还可以这样？！', {
+    this.add.text(400, 200, '灵机修真传', {
       font: '48px Arial',
       fill: '#ffffff',
       stroke: '#000000',
